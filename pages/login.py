@@ -5,6 +5,8 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import streamlit as st
 import auth
 
+st.set_page_config(page_title="Events", layout="wide")
+
 st.title(" Welcome Back")
 
 # Création des onglets
@@ -23,7 +25,7 @@ with tab1:
 
     new_password = st.text_input("Mot de passe",type="password",key="register_pass")
 
-    role = st.selectbox("Rôle",["Admin", "invite"],key="register_role")
+    role = st.selectbox("Rôle",["admin", "invite"],key="register_role")
 
     if st.button("S'inscrire"):
 
@@ -65,15 +67,20 @@ with tab2:
 
             if user:
 
-                st.success("Connexion réussie ✅")
+                #st.success("Connexion réussie ✅")
 
                 # sauvegarde session
                 st.session_state["user_id"] = user[0]
                 st.session_state["username"] = user[1]
                 st.session_state["role"] = user[2]
+                
+                if user[2] == "admin":
+                    st.switch_page("./pages/Admin_Dashboard.py")
+                else:
+                    st.switch_page("./pages/Invite_Dashboard.py")    
 
             else:
-                st.error("Nom ou mot de passe incorrect ❌")
+                st.error("Nom d'utilisateur ou mot de passe incorrect ❌")
 
         else:
             st.warning("Remplir tous les champs")
