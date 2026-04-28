@@ -44,7 +44,7 @@ def event_card(img, title, date, lieu, participants):
 
                 if not st.session_state.get("user_id"):
 
-                    st.info("🔐 Vous devez d'abord vous connecter")
+                    st.warning("Connectez-vous d'abord 🔐")
                     st.switch_page("pages/login.py")
                     st.stop()    
                     

@@ -3,25 +3,36 @@ import database as db
 
 st.set_page_config(page_title="Events", layout="wide")
 
-st.title("Dashboard Administrateur")
 
-# SEUL LES ADMIN PEUVENT ACCEDER
+# SEUL LES ADMINS PEUVENT ACCEDER
 if st.session_state.get("role") != "admin":
     st.error("⛔ Accès réservé à l'administrateur")
     st.stop()
 
 
+col1, col2 = st.columns([6,1])
+
+with col1:
+    st.title("Dashboard Administrateur")
+
+with col2:
+    if st.button("Déconnexion"):
+
+        st.session_state.clear()
+
+        st.switch_page("pages/login.py")
+
 # =========================
-#BOUTON AJOUT 
+# BOUTON AJOUT 
 # =========================
 
 if st.button("➕ Ajouter un événement"):
     st.session_state["show_add_form"] = True
 
 
-# =========================
+# ==================================
 # FORMULAIRE POUR AJOUTER EVENEMENT
-# =========================
+# ==================================
 
 if st.session_state.get("show_add_form"):
 

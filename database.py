@@ -5,13 +5,13 @@ import hashlib
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
+connexion = get_connexion()
+cursor = connexion.cursor()
+
 #=====================
 # CREATION DE LA TABLE USERS
 #====================
 def create_table_user():
-    connexion = get_connexion()
-    cursor = connexion.cursor()
-
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,15 +22,13 @@ def create_table_user():
     """)
 
     connexion.commit()
-    connexion.close()
+    
 create_table_user()
 
 #=====================
 # AJOUT DE USERS
 #=====================
 def add_user(username, password, role="invite"):
-    connexion = get_connexion()
-    cursor = connexion.cursor()
 
     hashed_password = hash_password(password)
 
@@ -40,22 +38,20 @@ def add_user(username, password, role="invite"):
     """, (username, hashed_password, role))
 
     connexion.commit()
-    connexion.close()
+    
     
     
 #=============================
-#  CREATION DE LA TABLE EVENS
+#  CREATION DE LA TABLE EVENTS
 #==============================
 def create_table_event():
-    connexion = get_connexion()
-    cursor = connexion.cursor()
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT,
             description TEXT,
-            date TEXT,
+            date date,
             lieu TEXT,
             id_user INTEGER,
             FOREIGN KEY(id_user) REFERENCES users(id)
@@ -63,15 +59,19 @@ def create_table_event():
     """)
 
     connexion.commit()
-    connexion.close()
+
+def alter_table():
+    cursor.execute("""
+        ALTER TABLE events add image text not null
+    """)
+    
+    
 create_table_event()    
     
 #====================
 #  AJOUT D'EVENEMENT
 #===================
 def add_event(title, description, date, lieu, id_user):
-    connexion = get_connexion()
-    cursor = connexion.cursor()
 
     cursor.execute("""
         INSERT INTO events
@@ -80,14 +80,12 @@ def add_event(title, description, date, lieu, id_user):
     """, (title, description, date, lieu, id_user))
 
     connexion.commit()
-    connexion.close()
+   
 
 #=================
 # LIRE EVENEMENT
-#===============
+#=================
 def get_event():
-    connexion = get_connexion()
-    cursor = connexion.cursor()
 
     cursor.execute("""
         SELECT events.id,
@@ -103,7 +101,6 @@ def get_event():
 
     data = cursor.fetchall()
 
-    connexion.close()
 
     return data
 
@@ -111,8 +108,6 @@ def get_event():
 # MODIFIER EVENEMENT
 #====================
 def update_event(id, title, description, date, lieu):
-    connexion = get_connexion()
-    cursor = connexion.cursor()
 
     cursor.execute("""
         UPDATE events
@@ -124,21 +119,88 @@ def update_event(id, title, description, date, lieu):
     """, (title, description, date, lieu, id))
 
     connexion.commit()
-    connexion.close()
+   
 
 
 #=====================
 # SUPPRIMER EVENEMENT
 #======================
 def delete_event(id):
-    connexion = get_connexion()
-    cursor = connexion.cursor()
 
     cursor.execute("""
         DELETE FROM events WHERE id=?
     """, (id,))
 
     connexion.commit()
-    connexion.close()
     
     
+    
+#====================================
+#CREATION DE LA TABLE PARTICIPANTS
+#====================================    
+    
+def create_table_participants():
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS participants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id_user INTEGER,
+            id_event INTEGER,
+            FOREIGN KEY(id_user) REFERENCES users(id),
+            FOREIGN KEY(id_event) REFERENCES events(id)
+        )
+    """)
+
+    connexion.commit()
+    
+create_table_participants()
+
+
+#=========================
+# PARTICIPER A UN EVENEMENT
+#=========================
+
+def participer_event(id_user, id_event):
+
+    # éviter double participation
+    cursor.execute("""
+        SELECT id FROM participants
+        WHERE id_user=? AND id_event=?
+    """, (id_user, id_event))
+
+    if cursor.fetchone():
+        connexion.close()
+        return False
+
+    cursor.execute("""
+        INSERT INTO participants (id_user, id_event)
+        VALUES (?, ?)
+    """, (id_user, id_event))
+
+    connexion.commit()
+   
+
+    return True
+
+#=========================
+# EVENEMENTS D'UN INVITE
+#=========================
+
+def get_user_events(id_user):
+
+    cursor.execute("""
+        SELECT events.id,
+               title,
+               description,
+               date,
+               lieu
+        FROM events
+        INNER JOIN participants
+        ON events.id = participants.id_event
+        WHERE participants.id_user = ?
+    """, (id_user,))
+
+    data = cursor.fetchall()
+
+
+    return data

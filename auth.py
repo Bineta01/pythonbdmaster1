@@ -25,7 +25,7 @@ def login_user(username, password, role="invite"):
     return user    
 
 # ===================
-# sign utilisateur
+# Sign utilisateur
 # ===================
 
 def sign_user(username, password, role="invite"):
@@ -52,5 +52,4 @@ def sign_user(username, password, role="invite"):
 
     connexion.commit()
    
-
     return True

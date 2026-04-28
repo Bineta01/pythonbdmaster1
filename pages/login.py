@@ -1,7 +1,6 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 import streamlit as st
 import auth
 
@@ -31,11 +30,7 @@ with tab1:
 
         if new_username and new_password:
 
-            success = auth.sign_user(
-                new_username,
-                new_password,
-                role
-            )
+            success = auth.sign_user(new_username, new_password, role)
 
             if success:
                 st.success("Inscription réussie ✅")
